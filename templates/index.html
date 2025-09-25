@@ -1,47 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Regulation Food Counter</title>
+    <title>Food Counter</title>
     <style>
         body {
             background-color: #FEFEFE;
-            font-family: "Helvetica", sans-serif;
+            font-family: 'Helvetica', sans-serif;
             font-weight: bold;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
         }
-        .frame {
+        .container {
             background-color: #000000;
             border-radius: 20px;
-            padding: 40px;
+            padding: 20px;
+            width: fit-content;
+            margin: auto;
             display: flex;
-            flex-direction: column;
+            gap: 40px;
+            justify-content: center;
             align-items: center;
         }
         .counter {
             background-color: #FEFEFE;
             color: #000000;
             border-radius: 50%;
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 36px;
-            margin: 10px;
-        }
-        .title {
-            color: #FEFEFE;
-            margin-bottom: 10px;
-            text-align: center;
+            font-size: 32px;
+            margin-top: 10px;
         }
         .item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 20px;
+            text-align: center;
+            color: #FEFEFE;
         }
         .refresh-button {
             background-color: #FEFEFE;
@@ -49,24 +41,24 @@
             border: none;
             border-radius: 20px;
             padding: 10px 20px;
-            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 30px;
+            margin: 20px auto;
+            display: block;
         }
     </style>
 </head>
 <body>
-    <div class="frame">
+    <form method="POST" action="/refresh">
+        <button class="refresh-button" type="submit">Refresh Counts</button>
+    </form>
+    <div class="container">
         {% for item, count in counts.items() %}
         <div class="item">
-            <div class="title">{{ item }}</div>
+            <div>{{ item }}</div>
             <div class="counter">{{ count }}</div>
         </div>
         {% endfor %}
-        <form method="POST">
-            <button class="refresh-button" type="submit">Refresh</button>
-        </form>
     </div>
 </body>
 </html>
