@@ -1,4 +1,4 @@
 Flask
-requests
 apscheduler
+requests
 python-dotenv
