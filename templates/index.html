@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Regulation Food Counter</title>
+    <title>Food Counter</title>
     <style>
         body {
             background-color: #FEFEFE;
@@ -12,39 +12,64 @@
             align-items: center;
             height: 100vh;
         }
-        .frame {
+        .container {
             background-color: #000000;
             border-radius: 20px;
             padding: 40px;
             display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .counters {
+            display: flex;
             gap: 40px;
+            margin-bottom: 30px;
         }
         .counter {
-            text-align: center;
-            color: #FEFEFE;
-        }
-        .circle {
             background-color: #FEFEFE;
-            color: #000000;
             border-radius: 50%;
             width: 120px;
             height: 120px;
             display: flex;
             justify-content: center;
             align-items: center;
+            color: #000000;
             font-size: 36px;
-            margin-top: 10px;
+        }
+        .title {
+            color: #FEFEFE;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .refresh-button {
+            background-color: #FEFEFE;
+            color: #000000;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <div class="frame">
-        {% for item, count in food_counts.items() %}
-        <div class="counter">
-            <div>{{ item }}</div>
-            <div class="circle">{{ count }}</div>
+    <div class="container">
+        <div class="counters">
+            {% for item, count in counts.items() %}
+            <div class="item">
+                <div class="title">{{ item }}</div>
+                <div class="counter">{{ count }}</div>
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
+        <form method="POST">
+            <button class="refresh-button" type="submit">Refresh</button>
+        </form>
     </div>
 </body>
 </html>

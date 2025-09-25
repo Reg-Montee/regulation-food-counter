@@ -1,12 +1,13 @@
 import os
-import requests
-from flask import Flask, render_template
-from datetime import datetime, timedelta
+import json
 import logging
+import requests
+from datetime import datetime, timedelta
+from flask import Flask, render_template, request, redirect
 
 app = Flask(__name__)
 
-# Configure logging
+# Setup logging
 logging.basicConfig(level=logging.INFO)
 
 # Fitbit API credentials from environment variables
@@ -18,29 +19,28 @@ REFRESH_TOKEN = os.getenv("FITBIT_REFRESH_TOKEN")
 
 # Food items to track
 FOOD_ITEMS = ["Regulation Hotdog", "Regulation Burger", "Regulation Apple"]
+CACHE_FILE = "food_counts.json"
 
 # Determine the 12-month period from September 1 to August 31
 def get_date_range():
-    today = datetime.today()
+    today = datetime.utcnow().date()
     if today.month >= 9:
-        start_date = datetime(today.year, 9, 1)
-        end_date = datetime(today.year + 1, 8, 31)
+        start = datetime(today.year, 9, 1).date()
+        end = datetime(today.year + 1, 8, 31).date()
     else:
-        start_date = datetime(today.year - 1, 9, 1)
-        end_date = datetime(today.year, 8, 31)
-    return start_date, end_date
+        start = datetime(today.year - 1, 9, 1).date()
+        end = datetime(today.year, 8, 31).date()
+    return start, end
 
 # Fetch food logs from Fitbit API
-def fetch_food_logs(start_date, end_date):
-    headers = {
-        "Authorization": f"Bearer {ACCESS_TOKEN}"
-    }
-    food_counts = {item: 0 for item in FOOD_ITEMS}
-    current_date = start_date
+def fetch_food_counts():
+    start_date, end_date = get_date_range()
+    counts = {item: 0 for item in FOOD_ITEMS}
+    date = start_date
+    headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
 
-    while current_date <= end_date:
-        date_str = current_date.strftime("%Y-%m-%d")
-        url = f"https://api.fitbit.com/1/user/-/foods/log/date/{date_str}.json"
+    while date <= end_date:
+        url = f"https://api.fitbit.com/1/user/-/foods/log/date/{date}.json"
         try:
             response = requests.get(url, headers=headers, timeout=10)
             response.raise_for_status()
@@ -49,16 +49,30 @@ def fetch_food_logs(start_date, end_date):
                 name = entry.get("loggedFood", {}).get("name", "")
                 for item in FOOD_ITEMS:
                     if item.lower() in name.lower():
-                        food_counts[item] += 1
-            logging.info(f"Processed {date_str}")
+                        counts[item] += 1
+            logging.info(f"Fetched data for {date}")
         except Exception as e:
-            logging.error(f"Error fetching data for {date_str}: {e}")
-        current_date += timedelta(days=1)
+            logging.error(f"Error fetching data for {date}: {e}")
+        date += timedelta(days=1)
 
-    return food_counts
+    with open(CACHE_FILE, "w") as f:
+        json.dump(counts, f)
+    return counts
 
-@app.route("/")
+# Load cached counts
+def load_cached_counts():
+    if os.path.exists(CACHE_FILE):
+        with open(CACHE_FILE, "r") as f:
+            return json.load(f)
+    return fetch_food_counts()
+
+@app.route("/", methods=["GET", "POST"])
 def index():
-    start_date, end_date = get_date_range()
-    food_counts = fetch_food_logs(start_date, end_date)
-    return render_template("index.html", food_counts=food_counts)
+    if request.method == "POST":
+        counts = fetch_food_counts()
+        return redirect("/")
+    counts = load_cached_counts()
+    return render_template("index.html", counts=counts)
+
+if __name__ == "__main__":
+    app.run(debug=True)
