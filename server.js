@@ -6,6 +6,10 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const clientId = process.env.FITBIT_CLIENT_ID;
+const clientSecret = process.env.FITBIT_CLIENT_SECRET;
+const redirectUri = process.env.FITBIT_REDIRECT_URI;
+
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
@@ -13,21 +17,21 @@ app.get('/', (req, res) => {
 });
 
 app.get('/auth', (req, res) => {
-  const url = `https://www.fitbit.com/oauth2/authorize?response_type=code&client_id=${process.env.FITBIT_CLIENT_ID}&redirect_uri=${process.env.FITBIT_REDIRECT_URI}&scope=nutrition&expires_in=604800`;
+  const url = `https://www.fitbit.com/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=nutrition&expires_in=604800`;
   res.redirect(url);
 });
 
 app.get('/callback', async (req, res) => {
   const code = req.query.code;
   const tokenUrl = 'https://api.fitbit.com/oauth2/token';
-  const authHeader = Buffer.from(`${process.env.FITBIT_CLIENT_ID}:${process.env.FITBIT_CLIENT_SECRET}`).toString('base64');
+  const authHeader = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
 
   try {
     const response = await axios.post(tokenUrl, null, {
       params: {
-        client_id: process.env.FITBIT_CLIENT_ID,
+        client_id: clientId,
         grant_type: 'authorization_code',
-        redirect_uri: process.env.FITBIT_REDIRECT_URI,
+        redirect_uri: redirectUri,
         code: code
       },
       headers: {
@@ -38,7 +42,7 @@ app.get('/callback', async (req, res) => {
 
     const accessToken = response.data.access_token;
     const refreshToken = response.data.refresh_token;
-    res.redirect(`/food-count?token=${accessToken}&refresh=${refreshToken}`);
+    res.redirect(`/public/iframe.html?token=${accessToken}&refresh=${refreshToken}`);
   } catch (error) {
     res.send('Error getting token');
   }
@@ -47,18 +51,46 @@ app.get('/callback', async (req, res) => {
 app.get('/food-count', async (req, res) => {
   const token = req.query.token;
   const refresh = req.query.refresh;
+  const tokenUrl = 'https://api.fitbit.com/oauth2/token';
+  const authHeader = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+
+  let accessToken = token;
+  let refreshToken = refresh;
+
+  // Refresh token if needed
+  try {
+    const refreshResponse = await axios.post(tokenUrl, null, {
+      params: {
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+        client_id: clientId
+      },
+      headers: {
+        Authorization: `Basic ${authHeader}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+    accessToken = refreshResponse.data.access_token;
+    refreshToken = refreshResponse.data.refresh_token;
+  } catch (error) {
+    console.log('Token refresh failed, using original token');
+  }
+
   const today = new Date();
-  const startDate = new Date(today.getFullYear() - 1, 8, 1); // Sept 1 last year
-  const endDate = new Date(today.getFullYear(), 7, 31); // Aug 31 this year
+  const startYear = today.getMonth() >= 8 ? today.getFullYear() : today.getFullYear() - 1;
+  const startDate = new Date(startYear, 8, 1); // September 1st
+  const endDate = new Date(startDate);
+  endDate.setFullYear(startDate.getFullYear() + 1);
 
   let hotdogs = 0, burgers = 0, apples = 0;
+  let currentDate = new Date(startDate);
 
   try {
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      const dateStr = d.toISOString().split('T')[0];
+    while (currentDate <= endDate) {
+      const dateStr = currentDate.toISOString().split('T')[0];
       const response = await axios.get(`https://api.fitbit.com/1/user/-/foods/log/date/${dateStr}.json`, {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${accessToken}`
         }
       });
 
@@ -69,6 +101,8 @@ app.get('/food-count', async (req, res) => {
         if (name === 'Regulation Burger') burgers++;
         if (name === 'Regulation Apple') apples++;
       });
+
+      currentDate.setDate(currentDate.getDate() + 1);
     }
 
     res.json({ hotdogs, burgers, apples });
