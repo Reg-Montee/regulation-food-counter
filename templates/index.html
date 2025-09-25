@@ -5,18 +5,19 @@
     <style>
         body {
             background-color: #FEFEFE;
-            font-family: "Helvetica", sans-serif;
+            font-family: 'Helvetica', sans-serif;
             font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
-        .container {
+        .frame {
             background-color: #000000;
             border-radius: 20px;
-            padding: 30px;
-            width: fit-content;
-            margin: auto;
+            padding: 40px;
             display: flex;
             gap: 40px;
-            justify-content: center;
         }
         .counter {
             text-align: center;
@@ -26,16 +27,18 @@
             background-color: #FEFEFE;
             color: #000000;
             border-radius: 50%;
-            width: 100px;
-            height: 100px;
-            line-height: 100px;
-            font-size: 24px;
-            margin: 10px auto;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 36px;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="frame">
         {% for item, count in food_counts.items() %}
         <div class="counter">
             <div>{{ item }}</div>
