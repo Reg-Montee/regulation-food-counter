@@ -54,15 +54,12 @@ app.get('/food-count', async (req, res) => {
   const tokenUrl = 'https://api.fitbit.com/oauth2/token';
   const authHeader = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
 
-  let accessToken = token;
-  let refreshToken = refresh;
-
   // Refresh token if needed
   try {
-    const refreshResponse = await axios.post(tokenUrl, null, {
+    const refreshed = await axios.post(tokenUrl, null, {
       params: {
         grant_type: 'refresh_token',
-        refresh_token: refreshToken,
+        refresh_token: refresh,
         client_id: clientId
       },
       headers: {
@@ -70,27 +67,20 @@ app.get('/food-count', async (req, res) => {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
     });
-    accessToken = refreshResponse.data.access_token;
-    refreshToken = refreshResponse.data.refresh_token;
-  } catch (error) {
-    console.log('Token refresh failed, using original token');
-  }
+    token = refreshed.data.access_token;
+  } catch (err) {}
 
+  let hotdogs = 0, burgers = 0, apples = 0;
   const today = new Date();
   const startYear = today.getMonth() >= 8 ? today.getFullYear() : today.getFullYear() - 1;
   const startDate = new Date(startYear, 8, 1); // September 1st
-  const endDate = new Date(startDate);
-  endDate.setFullYear(startDate.getFullYear() + 1);
-
-  let hotdogs = 0, burgers = 0, apples = 0;
-  let currentDate = new Date(startDate);
 
   try {
-    while (currentDate <= endDate) {
-      const dateStr = currentDate.toISOString().split('T')[0];
+    for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split('T')[0];
       const response = await axios.get(`https://api.fitbit.com/1/user/-/foods/log/date/${dateStr}.json`, {
         headers: {
-          Authorization: `Bearer ${accessToken}`
+          Authorization: `Bearer ${token}`
         }
       });
 
@@ -101,8 +91,6 @@ app.get('/food-count', async (req, res) => {
         if (name === 'Regulation Burger') burgers++;
         if (name === 'Regulation Apple') apples++;
       });
-
-      currentDate.setDate(currentDate.getDate() + 1);
     }
 
     res.json({ hotdogs, burgers, apples });
