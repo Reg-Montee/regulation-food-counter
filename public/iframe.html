@@ -1,22 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Food Tracker</title>
+  <title>Food Counters</title>
   <style>
-    :root {
-      --iframe-width: 300px;
-      --iframe-height: 300px;
-    }
     body {
       font-family: Helvetica, sans-serif;
       text-align: center;
       background-color: #000000;
       color: #FEFEFE;
-      width: var(--iframe-width);
-      height: var(--iframe-height);
-      margin: 0;
-      padding: 10px;
-      box-sizing: border-box;
     }
     .item {
       margin: 20px;
@@ -39,7 +30,6 @@
   </style>
 </head>
 <body>
-  <h2>Food Tracker</h2>
   <div class="item">
     <div class="label">Regulation Hotdog</div>
     <div class="circle" id="hotdogs">0</div>
@@ -54,8 +44,8 @@
   </div>
 
   <script>
-    function fetchData() {
-      fetch('/food-count?token=YOUR_ACCESS_TOKEN&refresh=YOUR_REFRESH_TOKEN')
+    function fetchCounts() {
+      fetch('/food-count')
         .then(res => res.json())
         .then(data => {
           document.getElementById('hotdogs').textContent = data.hotdogs;
@@ -63,8 +53,8 @@
           document.getElementById('apples').textContent = data.apples;
         });
     }
-    fetchData();
-    setInterval(fetchData, 60000);
+    fetchCounts();
+    setInterval(fetchCounts, 60000);
   </script>
 </body>
 </html>
