@@ -1,37 +1,48 @@
 import os
-import datetime
 import requests
 from flask import Flask, render_template
-from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime
 
 app = Flask(__name__)
 
-# Fitbit API credentials from environment variables
+# Fitbit API credentials from config vars
 ACCESS_TOKEN = os.getenv("FITBIT_ACCESS_TOKEN")
-REFRESH_TOKEN = os.getenv("FITBIT_REFRESH_TOKEN")
 CLIENT_ID = os.getenv("FITBIT_CLIENT_ID")
 CLIENT_SECRET = os.getenv("FITBIT_CLIENT_SECRET")
+REFRESH_TOKEN = os.getenv("FITBIT_REFRESH_TOKEN")
 
 # Food items to track
 FOOD_ITEMS = ["Regulation Hotdog", "Regulation Burger", "Regulation Apple"]
-counters = {item: 0 for item in FOOD_ITEMS}
+
+# Counter dictionary
+food_counters = {item: 0 for item in FOOD_ITEMS}
 
 def get_food_logs():
-    global counters
+    global food_counters
     headers = {
         "Authorization": f"Bearer {ACCESS_TOKEN}"
     }
 
-    today = datetime.date.today()
-    start_year = today.year if today.month >= 9 else today.year - 1
-    start_date = datetime.date(start_year, 9, 1)
-    end_date = datetime.date(start_year + 1, 8, 31)
+    # Determine date range: Sept 1 of previous year to Aug 31 of current year
+    today = datetime.utcnow()
+    year = today.year if today.month >= 9 else today.year - 1
+    start_date = f"{year}-09-01"
+    end_date = f"{year + 1}-08-31"
 
-    counters = {item: 0 for item in FOOD_ITEMS}
+    # Reset counters
+    food_counters = {item: 0 for item in FOOD_ITEMS}
 
-    date = start_date
-    while date <= end_date:
-        url = f"https://api.fitbit.com/1/user/-/foods/log/date/{date.isoformat()}.json"
+    # Fetch logs month by month
+    for month in range(9, 13):
+        date_prefix = f"{year}-{month:02d}"
+        fetch_month_logs(date_prefix, headers)
+    for month in range(1, 9):
+        date_prefix = f"{year + 1}-{month:02d}"
+        fetch_month_logs(date_prefix, headers)
+
+def fetch_month_logs(date_prefix, headers):
+    url = f"https://api.fitbit.com/1/user/-/foods/log/date/{date_prefix}-01.json"
+    try:
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             data = response.json()
@@ -39,16 +50,13 @@ def get_food_logs():
                 name = entry.get("loggedFood", {}).get("name", "")
                 for item in FOOD_ITEMS:
                     if item.lower() in name.lower():
-                        counters[item] += 1
-        date += datetime.timedelta(days=1)
-
-scheduler = BackgroundScheduler()
-scheduler.add_job(get_food_logs, 'cron', hour=4)
-scheduler.start()
+                        food_counters[item] += 1
+    except Exception as e:
+        print(f"Error fetching logs for {date_prefix}: {e}")
 
 @app.route("/")
 def index():
-    return render_template("index.html", counters=counters)
+    return render_template("index.html", counters=food_counters)
 
 if __name__ == "__main__":
     get_food_logs()
