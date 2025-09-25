@@ -5,13 +5,11 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-# Fitbit API credentials from environment variables
 ACCESS_TOKEN = os.getenv("FITBIT_ACCESS_TOKEN")
 CLIENT_ID = os.getenv("FITBIT_CLIENT_ID")
 CLIENT_SECRET = os.getenv("FITBIT_CLIENT_SECRET")
 REFRESH_TOKEN = os.getenv("FITBIT_REFRESH_TOKEN")
 
-# Food items to track
 FOOD_ITEMS = ["Regulation Hotdog", "Regulation Burger", "Regulation Apple"]
 food_counts = {item: 0 for item in FOOD_ITEMS}
 
@@ -58,9 +56,9 @@ def get_food_logs():
         if response.status_code == 200:
             logs = response.json().get("foods", [])
             for entry in logs:
-                name = entry.get("loggedFood", {}).get("name", "")
+                name = entry.get("loggedFood", {}).get("name", "").lower()
                 for item in FOOD_ITEMS:
-                    if item.lower() in name.lower():
+                    if item.lower() in name:
                         food_counts[item] += 1
 
         current_date += timedelta(days=1)
