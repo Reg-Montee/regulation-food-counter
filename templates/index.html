@@ -1,12 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Regulation Food Counter</title>
     <style>
         body {
             background-color: #FEFEFE;
-            font-family: 'Helvetica', sans-serif;
+            font-family: "Helvetica", sans-serif;
             font-weight: bold;
             margin: 0;
             padding: 0;
@@ -14,10 +12,9 @@
         .container {
             background-color: #000000;
             border-radius: 20px;
-            padding: 40px 20px;
+            padding: 40px;
             width: 300px;
-            margin: 50px auto;
-            text-align: center;
+            margin: 40px auto;
         }
         .counter {
             background-color: #FEFEFE;
@@ -25,27 +22,27 @@
             border-radius: 50%;
             width: 150px;
             height: 150px;
-            margin: 20px auto;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 48px;
+            margin: 20px auto;
         }
         .title {
             color: #FEFEFE;
-            font-size: 18px;
-            margin-bottom: 10px;
+            text-align: center;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="title">Regulation Hotdog</div>
-        <div class="counter">{{ counters['Regulation Hotdog'] }}</div>
+        <div class="counter">{{ counters["Regulation Hotdog"] }}</div>
         <div class="title">Regulation Burger</div>
-        <div class="counter">{{ counters['Regulation Burger'] }}</div>
+        <div class="counter">{{ counters["Regulation Burger"] }}</div>
         <div class="title">Regulation Apple</div>
-        <div class="counter">{{ counters['Regulation Apple'] }}</div>
+        <div class="counter">{{ counters["Regulation Apple"] }}</div>
     </div>
 </body>
 </html>

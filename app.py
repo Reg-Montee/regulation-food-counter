@@ -5,15 +5,18 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
+# Fitbit API credentials from environment variables
 ACCESS_TOKEN = os.getenv("FITBIT_ACCESS_TOKEN")
 CLIENT_ID = os.getenv("FITBIT_CLIENT_ID")
 CLIENT_SECRET = os.getenv("FITBIT_CLIENT_SECRET")
 REFRESH_TOKEN = os.getenv("FITBIT_REFRESH_TOKEN")
 
+# Food items to track
 FOOD_ITEMS = ["Regulation Hotdog", "Regulation Burger", "Regulation Apple"]
 food_counts = {item: 0 for item in FOOD_ITEMS}
 
 def refresh_access_token():
+    print("Refreshing access token...")
     url = "https://api.fitbit.com/oauth2/token"
     headers = {
         "Authorization": f"Basic {requests.auth._basic_auth_str(CLIENT_ID, CLIENT_SECRET)}",
@@ -24,6 +27,7 @@ def refresh_access_token():
         "refresh_token": REFRESH_TOKEN
     }
     response = requests.post(url, headers=headers, data=data)
+    print(f"Refresh response: {response.status_code} {response.text}")
     if response.status_code == 200:
         tokens = response.json()
         os.environ["FITBIT_ACCESS_TOKEN"] = tokens["access_token"]
@@ -46,26 +50,35 @@ def get_food_logs():
     while current_date <= end_date:
         date_str = current_date.strftime("%Y-%m-%d")
         url = f"https://api.fitbit.com/1/user/-/foods/log/date/{date_str}.json"
+        print(f"Requesting food logs for {date_str}")
         response = requests.get(url, headers=headers)
-
+        print(f"Status: {response.status_code}")
         if response.status_code == 401:
             access_token = refresh_access_token()
             headers["Authorization"] = f"Bearer {access_token}"
             response = requests.get(url, headers=headers)
+            print(f"Retry Status: {response.status_code}")
 
         if response.status_code == 200:
             logs = response.json().get("foods", [])
             for entry in logs:
                 name = entry.get("loggedFood", {}).get("name", "").lower()
+                print(f"Logged food: {name}")
                 for item in FOOD_ITEMS:
                     if item.lower() in name:
                         food_counts[item] += 1
-
+        else:
+            print(f"Error fetching logs: {response.text}")
         current_date += timedelta(days=1)
 
 @app.route("/")
 def index():
     return render_template("index.html", counters=food_counts)
+
+@app.route("/debug")
+def debug():
+    get_food_logs()
+    return food_counts
 
 if __name__ == "__main__":
     get_food_logs()
