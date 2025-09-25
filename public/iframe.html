@@ -55,7 +55,7 @@
 
   <script>
     function fetchData() {
-      fetch('/food-count')
+      fetch('/food-count?token=YOUR_ACCESS_TOKEN&refresh=YOUR_REFRESH_TOKEN')
         .then(res => res.json())
         .then(data => {
           document.getElementById('hotdogs').textContent = data.hotdogs;
@@ -63,7 +63,6 @@
           document.getElementById('apples').textContent = data.apples;
         });
     }
-
     fetchData();
     setInterval(fetchData, 60000);
   </script>
