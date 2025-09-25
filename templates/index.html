@@ -1,63 +1,47 @@
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Food Counter</title>
     <style>
         body {
             background-color: #FEFEFE;
-            font-family: 'Helvetica', sans-serif;
+            font-family: "Helvetica", sans-serif;
             font-weight: bold;
+            margin: 0;
+            padding: 0;
         }
         .container {
             background-color: #000000;
             border-radius: 20px;
             padding: 20px;
-            width: fit-content;
-            margin: auto;
-            display: flex;
-            gap: 40px;
-            justify-content: center;
-            align-items: center;
+            width: 300px;
+            margin: 20px auto;
         }
         .counter {
             background-color: #FEFEFE;
             color: #000000;
             border-radius: 50%;
-            width: 100px;
-            height: 100px;
+            width: 150px;
+            height: 150px;
             display: flex;
-            justify-content: center;
             align-items: center;
-            font-size: 32px;
-            margin-top: 10px;
+            justify-content: center;
+            font-size: 48px;
+            margin: 10px auto;
         }
-        .item {
-            text-align: center;
+        .title {
             color: #FEFEFE;
-        }
-        .refresh-button {
-            background-color: #FEFEFE;
-            color: #000000;
-            border: none;
-            border-radius: 20px;
-            padding: 10px 20px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 20px auto;
-            display: block;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 20px;
         }
     </style>
 </head>
 <body>
-    <form method="POST" action="/refresh">
-        <button class="refresh-button" type="submit">Refresh Counts</button>
-    </form>
     <div class="container">
         {% for item, count in counts.items() %}
-        <div class="item">
-            <div>{{ item }}</div>
+            <div class="title">{{ item }}</div>
             <div class="counter">{{ count }}</div>
-        </div>
         {% endfor %}
     </div>
 </body>
