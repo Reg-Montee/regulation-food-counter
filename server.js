@@ -10,7 +10,11 @@ const clientId = process.env.FITBIT_CLIENT_ID;
 const clientSecret = process.env.FITBIT_CLIENT_SECRET;
 const redirectUri = process.env.FITBIT_REDIRECT_URI;
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use('/public', express.static(path.join(__dirname, 'public')));
+
+app.get('/', (req, res) => {
+  res.redirect('/public/iframe.html');
+});
 
 app.get('/auth', (req, res) => {
   const url = `https://www.fitbit.com/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=nutrition&expires_in=604800`;
@@ -47,6 +51,40 @@ app.get('/callback', async (req, res) => {
     `);
   } catch (error) {
     res.status(500).send('Error retrieving access token');
+  }
+});
+
+app.get('/food-count', async (req, res) => {
+  const accessToken = process.env.FITBIT_ACCESS_TOKEN;
+  const refreshToken = process.env.FITBIT_REFRESH_TOKEN;
+
+  const today = new Date();
+  const startDate = new Date(today.getFullYear() - (today.getMonth() < 8 ? 1 : 0), 8, 1); // Sept 1 of current or previous year
+  const endDate = new Date(startDate.getFullYear() + 1, 8, 1); // Sept 1 of next year
+
+  let hotdogs = 0, burgers = 0, apples = 0;
+
+  try {
+    for (let d = new Date(startDate); d < endDate; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split('T')[0];
+      const response = await axios.get(`https://api.fitbit.com/1/user/-/foods/log/date/${dateStr}.json`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+
+      const foods = response.data.foods || [];
+      foods.forEach(food => {
+        const name = food.loggedFood.name;
+        if (name === 'Regulation Hotdog') hotdogs++;
+        if (name === 'Regulation Burger') burgers++;
+        if (name === 'Regulation Apple') apples++;
+      });
+    }
+
+    res.json({ hotdogs, burgers, apples });
+  } catch (error) {
+    res.status(500).send('Error fetching food logs');
   }
 });
 
