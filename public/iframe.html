@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Food Tracker</title>
+  <style>
+    :root {
+      --iframe-width: 300px;
+      --iframe-height: 300px;
+    }
+    body {
+      font-family: Helvetica, sans-serif;
+      text-align: center;
+      background-color: #000000;
+      color: #FEFEFE;
+      width: var(--iframe-width);
+      height: var(--iframe-height);
+      margin: 0;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    .item {
+      margin: 20px;
+    }
+    .label {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .circle {
+      display: inline-block;
+      width: 60px;
+      height: 60px;
+      line-height: 60px;
+      border-radius: 50%;
+      background-color: #FEFEFE;
+      color: #000000;
+      font-size: 24px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>Food Tracker</h2>
+  <div class="item">
+    <div class="label">Regulation Hotdog</div>
+    <div class="circle" id="hotdogs">0</div>
+  </div>
+  <div class="item">
+    <div class="label">Regulation Burger</div>
+    <div class="circle" id="burgers">0</div>
+  </div>
+  <div class="item">
+    <div class="label">Regulation Apple</div>
+    <div class="circle" id="apples">0</div>
+  </div>
+
+  <script>
+    function fetchData() {
+      fetch('/food-count')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('hotdogs').textContent = data.hotdogs;
+          document.getElementById('burgers').textContent = data.burgers;
+          document.getElementById('apples').textContent = data.apples;
+        });
+    }
+
+    fetchData();
+    setInterval(fetchData, 60000);
+  </script>
+</body>
+</html>
