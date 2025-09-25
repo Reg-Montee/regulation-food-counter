@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Food Counters</title>
+  <title>Food Tracker</title>
   <style>
     body {
       font-family: Helvetica, sans-serif;
@@ -44,17 +44,28 @@
   </div>
 
   <script>
-    function fetchCounts() {
-      fetch('/food-count')
+    function updateCounters() {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+      const refresh = params.get('refresh');
+
+      if (!token || !refresh) {
+        console.error("Missing token or refresh token in URL parameters.");
+        return;
+      }
+
+      fetch(`/food-count?token=${token}&refresh=${refresh}`)
         .then(res => res.json())
         .then(data => {
           document.getElementById('hotdogs').textContent = data.hotdogs;
           document.getElementById('burgers').textContent = data.burgers;
           document.getElementById('apples').textContent = data.apples;
-        });
+        })
+        .catch(err => console.error("Error fetching food count:", err));
     }
-    fetchCounts();
-    setInterval(fetchCounts, 60000);
+
+    updateCounters();
+    setInterval(updateCounters, 60000); // Refresh every 60 seconds
   </script>
 </body>
 </html>
