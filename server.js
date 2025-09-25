@@ -10,9 +10,6 @@ const clientId = process.env.FITBIT_CLIENT_ID;
 const clientSecret = process.env.FITBIT_CLIENT_SECRET;
 const redirectUri = process.env.FITBIT_REDIRECT_URI;
 
-let accessToken = process.env.FITBIT_ACCESS_TOKEN || '';
-let refreshToken = process.env.FITBIT_REFRESH_TOKEN || '';
-
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/auth', (req, res) => {
@@ -39,45 +36,17 @@ app.get('/callback', async (req, res) => {
       }
     });
 
-    accessToken = response.data.access_token;
-    refreshToken = response.data.refresh_token;
+    const accessToken = response.data.access_token;
+    const refreshToken = response.data.refresh_token;
 
-    res.redirect(`/public/iframe.html`);
+    res.send(`
+      <h2>Fitbit Authorization Successful</h2>
+      <p><strong>Access Token:</strong> ${accessToken}</p>
+      <p><strong>Refresh Token:</strong> ${refreshToken}</p>
+      <p>Please copy these tokens and add them to your Heroku config vars.</p>
+    `);
   } catch (error) {
     res.status(500).send('Error retrieving access token');
-  }
-});
-
-app.get('/food-count', async (req, res) => {
-  const today = new Date();
-  const startYear = today.getMonth() >= 8 ? today.getFullYear() : today.getFullYear() - 1;
-  const startDate = new Date(startYear, 8, 1); // September 1st
-  const endDate = new Date(startDate);
-  endDate.setFullYear(startDate.getFullYear() + 1);
-
-  let hotdogs = 0, burgers = 0, apples = 0;
-
-  try {
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      const dateStr = d.toISOString().split('T')[0];
-      const response = await axios.get(`https://api.fitbit.com/1/user/-/foods/log/date/${dateStr}.json`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
-
-      const foods = response.data.foods || [];
-      foods.forEach(food => {
-        const name = food.loggedFood.name;
-        if (name === 'Regulation Hotdog') hotdogs++;
-        if (name === 'Regulation Burger') burgers++;
-        if (name === 'Regulation Apple') apples++;
-      });
-    }
-
-    res.json({ hotdogs, burgers, apples });
-  } catch (error) {
-    res.status(500).send('Error fetching food logs');
   }
 });
 
