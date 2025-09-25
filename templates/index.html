@@ -1,21 +1,22 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <title>Regulation Food Counter</title>
     <style>
         body {
             background-color: #FEFEFE;
-            font-family: "Helvetica", sans-serif;
+            font-family: 'Helvetica', sans-serif;
             font-weight: bold;
             margin: 0;
-            padding: 0;
+            padding: 20px;
         }
         .container {
             background-color: #000000;
             border-radius: 20px;
-            padding: 20px;
+            padding: 30px;
             width: 300px;
-            margin: 20px auto;
+            margin: auto;
         }
         .counter {
             background-color: #FEFEFE;
@@ -26,20 +27,19 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 48px;
-            margin: 10px auto;
+            margin: 20px auto;
+            font-size: 36px;
         }
         .title {
             color: #FEFEFE;
             text-align: center;
-            margin-top: 20px;
-            font-size: 20px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        {% for item, count in counts.items() %}
+        {% for item, count in counters.items() %}
             <div class="title">{{ item }}</div>
             <div class="counter">{{ count }}</div>
         {% endfor %}
