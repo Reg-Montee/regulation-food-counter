@@ -125,9 +125,9 @@ def fetch_food_logs():
 # ----------------------------
 def start_scheduler():
     scheduler = BackgroundScheduler(timezone='UTC')
-    scheduler.add_job(fetch_food_logs, CronTrigger(hour='4,16', minute=0))
+    scheduler.add_job(fetch_food_logs, CronTrigger(hour='10,22', minute=40))
     scheduler.start()
-    logging.info("Scheduler started with jobs at 4am and 4pm GMT.")
+    logging.info("Scheduler started with jobs at 10:40am and 10:40pm UTC.")
 
 # ----------------------------
 # Routes
