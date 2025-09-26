@@ -1,1 +1,1 @@
-# Flask app code goes here
+app = Flask(__name__)
