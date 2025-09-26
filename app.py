@@ -113,8 +113,8 @@ if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or os.environ.get("FLASK_RUN_FR
     from apscheduler.schedulers.background import BackgroundScheduler
     from apscheduler.triggers.cron import CronTrigger
     scheduler = BackgroundScheduler(timezone='UTC')
-    scheduler.add_job(fetch_food_logs, CronTrigger(hour='4,16', minute=0))
+    scheduler.add_job(fetch_food_logs, CronTrigger(hour='11,23', minute=0))
     scheduler.start()
-    logging.info("Scheduler started with jobs at 4am and 4pm GMT.")
+    logging.info("Scheduler started with jobs at 11am and 11pm GMT.")
 
 init_db()
