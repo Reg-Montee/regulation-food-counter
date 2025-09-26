@@ -111,21 +111,28 @@ def login():
 def callback():
     code = request.args.get('code')
     redirect_uri = os.getenv('FITBIT_REDIRECT_URI')
+    client_id = os.getenv('FITBIT_CLIENT_ID')
+    client_secret = os.getenv('FITBIT_CLIENT_SECRET')
+
     headers = {
-        "Authorization": f"Basic {requests.auth._basic_auth_str(os.getenv('FITBIT_CLIENT_ID'), os.getenv('FITBIT_CLIENT_SECRET'))}",
+        "Authorization": f"Basic {requests.auth._basic_auth_str(client_id, client_secret)}",
         "Content-Type": "application/x-www-form-urlencoded"
     }
     data = {
-        "client_id": os.getenv('FITBIT_CLIENT_ID'),
+        "client_id": client_id,
         "grant_type": "authorization_code",
         "redirect_uri": redirect_uri,
         "code": code
     }
+
     response = requests.post("https://api.fitbit.com/oauth2/token", headers=headers, data=data)
+
     if response.status_code == 200:
         tokens = response.json()
         user_id = tokens['user_id']
         session['user_id'] = user_id
+
+        # Save tokens to database
         user_token = UserToken.query.filter_by(user_id=user_id).first()
         if user_token:
             user_token.access_token = tokens['access_token']
@@ -133,9 +140,12 @@ def callback():
         else:
             db.session.add(UserToken(user_id=user_id, access_token=tokens['access_token'], refresh_token=tokens['refresh_token']))
         db.session.commit()
+
         fetch_food_logs(UserToken.query.filter_by(user_id=user_id).first())
         return redirect('/')
-    return "Authorization failed", 400
+    else:
+        logging.error(f"Fitbit token exchange failed: {response.status_code} - {response.text}")
+        return f"Authorization failed: {response.status_code} - {response.text}", 400
 
 @app.route('/manual-refresh')
 def manual_refresh():
