@@ -130,6 +130,12 @@ def debug_fitbit():
             "response": response.text
         }, response.status_code
 
+@app.route('/debug-refresh-token')
+def debug_refresh_token():
+    new_token = refresh_access_token()
+    return {
+        "new_access_token": new_token
+    }, 200
 
 # Only start scheduler in main process
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or os.environ.get("FLASK_RUN_FROM_CLI") == "true":
