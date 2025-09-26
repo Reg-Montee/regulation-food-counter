@@ -108,6 +108,12 @@ def api_counters():
     counters = FoodCounter.query.all()
     return jsonify({counter.food_item: counter.count for counter in counters})
 
+
+@app.route('/manual-refresh')
+def manual_refresh():
+    fetch_food_logs()
+    return "Manual refresh triggered. Check logs for details.", 200
+
 # Only start scheduler in main process
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or os.environ.get("FLASK_RUN_FROM_CLI") == "true":
     from apscheduler.schedulers.background import BackgroundScheduler
