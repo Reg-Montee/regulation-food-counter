@@ -7,4 +7,4 @@ def home():
     return "Hello from Regulation Food Counter!"
 
 if __name__ == "__main__":
-    app.run()# Flask app code goes here
+    app.run()
