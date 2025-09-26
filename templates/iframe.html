@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,25 +6,41 @@
             background-color: #FEFEFE;
             font-family: "Helvetica", sans-serif;
             font-weight: bold;
+            margin: 0;
+        }
+        .aspect-ratio-box {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+            margin: auto;
+            aspect-ratio: 3 / 4; /* Maintains 3:4 ratio */
         }
         .container {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
             background-color: #000000;
             border-radius: 20px;
             padding: 40px 5px 20px 5px;
-            width: 300px;
-            margin: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
         }
         .counter {
             background-color: #FEFEFE;
             color: #000000;
             border-radius: 50%;
-            width: 120px;
-            height: 120px;
+            width: 38vw; /* Responsive width */
+            max-width: 120px;
+            height: 38vw;
+            max-height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 30px auto; /* Increased vertical spacing */
-            font-size: 36px;
+            margin: 30px auto;
+            font-size: 2em;
         }
         .title {
             color: #FEFEFE;
@@ -33,16 +48,28 @@
             margin-bottom: -10px;
             font-size: 20px;
         }
+        @media (max-width: 400px) {
+            .counter {
+                width: 60vw;
+                height: 60vw;
+                font-size: 1.5em;
+            }
+            .aspect-ratio-box {
+                max-width: 95vw;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="title">Regulation Hotdog</div>
-        <div class="counter">{{ counts['Regulation Hotdog'] }}</div>
-        <div class="title">Regulation Burger</div>
-        <div class="counter">{{ counts['Regulation Burger'] }}</div>
-        <div class="title">Regulation Apple</div>
-        <div class="counter">{{ counts['Regulation Apple'] }}</div>
+    <div class="aspect-ratio-box">
+        <div class="container">
+            <div class="title">Regulation Hotdog</div>
+            <div class="counter">{{ counts['Regulation Hotdog'] }}</div>
+            <div class="title">Regulation Burger</div>
+            <div class="counter">{{ counts['Regulation Burger'] }}</div>
+            <div class="title">Regulation Apple</div>
+            <div class="counter">{{ counts['Regulation Apple'] }}</div>
+        </div>
     </div>
 </body>
 </html>
