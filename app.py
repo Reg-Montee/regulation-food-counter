@@ -70,7 +70,7 @@ def fetch_food_logs():
         db.session.commit()
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(fetch_food_logs, 'cron', hour='11,23', minute=30)
+scheduler.add_job(fetch_food_logs, 'cron', hour='10,22', minute=10)
 scheduler.start()
 
 @app.route('/')
