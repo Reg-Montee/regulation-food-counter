@@ -1,86 +1,87 @@
 import os
-import requests
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime, timedelta
+import requests
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///food_counter.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
-# Fitbit API credentials from environment variables
-ACCESS_TOKEN = os.getenv("FITBIT_ACCESS_TOKEN")
-CLIENT_ID = os.getenv("FITBIT_CLIENT_ID")
-CLIENT_SECRET = os.getenv("FITBIT_CLIENT_SECRET")
-REFRESH_TOKEN = os.getenv("FITBIT_REFRESH_TOKEN")
+FOOD_ITEMS = ['Regulation Hotdog', 'Regulation Burger', 'Regulation Apple']
 
-# Food items to track
-FOOD_ITEMS = ["Regulation Hotdog", "Regulation Burger", "Regulation Apple"]
-food_counts = {item: 0 for item in FOOD_ITEMS}
+class FoodCounter(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    food_item = db.Column(db.String(50), unique=True, nullable=False)
+    count = db.Column(db.Integer, default=0)
+
+with app.app_context():
+    db.create_all()
+    for item in FOOD_ITEMS:
+        if not FoodCounter.query.filter_by(food_item=item).first():
+            db.session.add(FoodCounter(food_item=item, count=0))
+    db.session.commit()
 
 def refresh_access_token():
-    print("Refreshing access token...")
     url = "https://api.fitbit.com/oauth2/token"
     headers = {
-        "Authorization": f"Basic {requests.auth._basic_auth_str(CLIENT_ID, CLIENT_SECRET)}",
+        "Authorization": f"Basic {requests.auth._basic_auth_str(os.getenv('FITBIT_CLIENT_ID'), os.getenv('FITBIT_CLIENT_SECRET'))}",
         "Content-Type": "application/x-www-form-urlencoded"
     }
     data = {
         "grant_type": "refresh_token",
-        "refresh_token": REFRESH_TOKEN
+        "refresh_token": os.getenv('FITBIT_REFRESH_TOKEN')
     }
     response = requests.post(url, headers=headers, data=data)
-    print(f"Refresh response: {response.status_code} {response.text}")
     if response.status_code == 200:
         tokens = response.json()
-        os.environ["FITBIT_ACCESS_TOKEN"] = tokens["access_token"]
-        os.environ["FITBIT_REFRESH_TOKEN"] = tokens["refresh_token"]
-        return tokens["access_token"]
-    return ACCESS_TOKEN
+        os.environ['FITBIT_ACCESS_TOKEN'] = tokens['access_token']
+        os.environ['FITBIT_REFRESH_TOKEN'] = tokens['refresh_token']
+        return tokens['access_token']
+    return os.getenv('FITBIT_ACCESS_TOKEN')
 
-def get_food_logs():
-    global food_counts
-    food_counts = {item: 0 for item in FOOD_ITEMS}
-    access_token = ACCESS_TOKEN
+def fetch_food_logs():
+    access_token = refresh_access_token()
     headers = {"Authorization": f"Bearer {access_token}"}
-
     today = datetime.utcnow().date()
-    start_year = today.year if today.month >= 9 else today.year - 1
-    start_date = datetime(start_year, 9, 1).date()
-    end_date = today
-
+    start_date = datetime(today.year if today.month >= 9 else today.year - 1, 9, 1).date()
     current_date = start_date
-    while current_date <= end_date:
-        date_str = current_date.strftime("%Y-%m-%d")
-        url = f"https://api.fitbit.com/1/user/-/foods/log/date/{date_str}.json"
-        print(f"Requesting food logs for {date_str}")
-        response = requests.get(url, headers=headers)
-        print(f"Status: {response.status_code}")
-        if response.status_code == 401:
-            access_token = refresh_access_token()
-            headers["Authorization"] = f"Bearer {access_token}"
-            response = requests.get(url, headers=headers)
-            print(f"Retry Status: {response.status_code}")
+    food_counts = {item: 0 for item in FOOD_ITEMS}
 
+    while current_date <= today:
+        url = f"https://api.fitbit.com/1/user/-/foods/log/date/{current_date}.json"
+        response = requests.get(url, headers=headers)
         if response.status_code == 200:
-            logs = response.json().get("foods", [])
-            for entry in logs:
-                name = entry.get("loggedFood", {}).get("name", "").lower()
-                print(f"Logged food: {name}")
+            logs = response.json().get('foods', [])
+            for log in logs:
+                name = log.get('name', '')
                 for item in FOOD_ITEMS:
-                    if item.lower() in name:
+                    if item.lower() in name.lower():
                         food_counts[item] += 1
-        else:
-            print(f"Error fetching logs: {response.text}")
         current_date += timedelta(days=1)
 
-@app.route("/")
+    with app.app_context():
+        for item, count in food_counts.items():
+            record = FoodCounter.query.filter_by(food_item=item).first()
+            if record:
+                record.count = count
+        db.session.commit()
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(fetch_food_logs, 'cron', hour='4,16', minute=0)
+scheduler.start()
+
+@app.route('/')
 def index():
-    return render_template("index.html", counters=food_counts)
+    counters = FoodCounter.query.all()
+    return render_template('index.html', counters=counters)
 
-@app.route("/debug")
-def debug():
-    get_food_logs()
-    return food_counts
+@app.route('/api/counters')
+def api_counters():
+    counters = FoodCounter.query.all()
+    return jsonify({counter.food_item: counter.count for counter in counters})
 
-if __name__ == "__main__":
-    get_food_logs()
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+if __name__ == '__main__':
+    app.run(debug=True)

@@ -1,20 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <title>Regulation Food Counter</title>
     <style>
         body {
             background-color: #FEFEFE;
-            font-family: "Helvetica", sans-serif;
+            font-family: 'Helvetica', sans-serif;
             font-weight: bold;
             margin: 0;
-            padding: 0;
+            padding: 20px;
         }
         .container {
             background-color: #000000;
             border-radius: 20px;
             padding: 40px;
             width: 300px;
-            margin: 40px auto;
+            margin: auto;
         }
         .counter {
             background-color: #FEFEFE;
@@ -25,24 +27,23 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 48px;
             margin: 20px auto;
+            font-size: 48px;
         }
         .title {
             color: #FEFEFE;
             text-align: center;
-            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="title">Regulation Hotdog</div>
-        <div class="counter">{{ counters["Regulation Hotdog"] }}</div>
-        <div class="title">Regulation Burger</div>
-        <div class="counter">{{ counters["Regulation Burger"] }}</div>
-        <div class="title">Regulation Apple</div>
-        <div class="counter">{{ counters["Regulation Apple"] }}</div>
+        {% for counter in counters %}
+            <div class="title">{{ counter.food_item }}</div>
+            <div class="counter">{{ counter.count }}</div>
+        {% endfor %}
     </div>
 </body>
 </html>
