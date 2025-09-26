@@ -1,1 +1,10 @@
-# Flask app code goes here
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "Hello from Regulation Food Counter!"
+
+if __name__ == "__main__":
+    app.run()# Flask app code goes here
