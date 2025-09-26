@@ -1,4 +1,2 @@
-Flask
-Flask_SQLAlchemy
+flask
 requests
-gunicorn
