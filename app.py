@@ -114,6 +114,23 @@ def manual_refresh():
     fetch_food_logs()
     return "Manual refresh triggered. Check logs for details.", 200
 
+@app.route('/debug-fitbit')
+def debug_fitbit():
+    access_token = refresh_access_token()
+    headers = {"Authorization": f"Bearer {access_token}"}
+    today = datetime.utcnow().date()
+    url = f"https://api.fitbit.com/1/user/-/foods/log/date/{today}.json"
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json(), 200
+    else:
+        return {
+            "error": "Failed to fetch data",
+            "status_code": response.status_code,
+            "response": response.text
+        }, response.status_code
+
+
 # Only start scheduler in main process
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or os.environ.get("FLASK_RUN_FROM_CLI") == "true":
     from apscheduler.schedulers.background import BackgroundScheduler
