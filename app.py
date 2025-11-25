@@ -13,11 +13,11 @@ db = SQLAlchemy(app)
 
 # Custom food items to track
 FOOD_ITEMS = {
-    "RegBurger Andrew": "regburgerandrew",
-    "RegBurger Nick": "regburgernick",
-    "RegBurger Eric": "regburgereric",
-    "RegBurger Geoff": "regburgergeoff",
-    "RegBurger Gavin": "regburgergavin"
+    "regburgerandrew": "regburgerandrew",
+    "regburgernick": "regburgernick",
+    "regurgereric": "regburgereric",
+    "regburgergeoff": "regburgergeoff",
+    "regburgergavin": "regburgergavin"
 }
 
 class FoodLog(db.Model):
