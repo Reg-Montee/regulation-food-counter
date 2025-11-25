@@ -1,4 +1,4 @@
-from flask import Flask, redirect, request, session, render_template
+from flask import Flask, redirect, request, render_template
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import requests
@@ -10,10 +10,14 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///food_logs.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+# New food items to track
 FOOD_ITEMS = {
-    "Regulation Hotdog": "hotdog",
-    "Regulation Burger": "burger",
-    "Regulation Apple": "apple"
+    "RegBurger": "regburger",
+    "AndrewRegBurger": "andrewregburger",
+    "NickRegBurger": "nickregburger",
+    "EricRegBurger": "ericregburger",
+    "GeoffRegBurger": "geoffregburger",
+    "Gavin": "gavin"
 }
 
 class FoodLog(db.Model):
@@ -53,18 +57,14 @@ def callback():
         "code": code
     }
     response = requests.post(token_url, headers=headers, data=data)
-    token_data = response.json()
-    return token_data
+    return response.json()
 
 @app.route("/update")
 def update_logs():
     if not ACCESS_TOKEN:
         return "Missing access token", 400
 
-    headers = {
-        "Authorization": f"Bearer {ACCESS_TOKEN}"
-    }
-
+    headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
     today = datetime.utcnow().date()
     start_date = datetime(today.year - 1 if today.month < 9 else today.year, 9, 1).date()
     end_date = today
