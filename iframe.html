@@ -1,0 +1,69 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-color: #FEFEFE;
+            font-family: "Helvetica", sans-serif;
+            font-weight: bold;
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+        }
+        .row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 20px;
+        }
+        .title {
+            color: #000000;
+            font-size: 18px;
+            min-width: 100px;
+            text-align: left;
+        }
+        .counter {
+            background-color: #FEFEFE;
+            color: #000000;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            border: 2px solid #000000;
+        }
+        @media (max-width: 500px) {
+            .container {
+                max-width: 95vw;
+            }
+            .title {
+                font-size: 16px;
+                min-width: 80px;
+            }
+            .counter {
+                width: 60px;
+                height: 60px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row"><div class="title">Andrew</div><div class="counter">{{ counts['RegBurger Andrew'] }}</div></div>
+        <div class="row"><div class="title">Nick</div><div class="counter">{{ counts['RegBurger Nick'] }}</div></div>
+        <div class="row"><div class="title">Eric</div><div class="counter">{{ counts['RegBurger Eric'] }}</div></div>
+        <div class="row"><div class="title">Geoff</div><div class="counter">{{ counts['RegBurger Geoff'] }}</div></div>
+        <div class="row"><div class="title">Gavin</div><div class="counter">{{ counts['RegBurger Gavin'] }}</div></div>
+    </div>
+</body>
+</html>
