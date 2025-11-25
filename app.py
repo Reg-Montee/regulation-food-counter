@@ -1,3 +1,4 @@
+
 from flask import Flask, redirect, request, render_template
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
@@ -10,14 +11,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///food_logs.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# New food items to track
+# Custom food items to track
 FOOD_ITEMS = {
-    "RegBurger": "regburger",
-    "AndrewRegBurger": "andrewregburger",
-    "NickRegBurger": "nickregburger",
-    "EricRegBurger": "ericregburger",
-    "GeoffRegBurger": "geoffregburger",
-    "Gavin": "gavin"
+    "RegBurger Andrew": "regburger andrew",
+    "RegBurger Nick": "regburger nick",
+    "RegBurger Eric": "regburger eric",
+    "RegBurger Geoff": "regburger geoff",
+    "RegBurger Gavin": "regburger gavin"
 }
 
 class FoodLog(db.Model):
